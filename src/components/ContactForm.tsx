@@ -6,12 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
-  empresa: z.string().trim().min(2, "La empresa debe tener al menos 2 caracteres").max(100),
+  empresa: z.string().trim().max(100).optional(),
   email: z.string().trim().email("Email inválido").max(255),
-  telefono: z.string().trim().min(6, "Teléfono inválido").max(20),
+  telefono: z.string().trim().max(20).optional(),
   comentario: z.string().trim().min(10, "El comentario debe tener al menos 10 caracteres").max(1000),
 });
 
@@ -20,7 +21,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export const ContactForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<ContactFormData>({
+  const [formData, setFormData] = useState({
     nombre: "",
     empresa: "",
     email: "",
@@ -34,7 +35,6 @@ export const ContactForm = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name as keyof ContactFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -48,8 +48,15 @@ export const ContactForm = () => {
     try {
       const validatedData = contactSchema.parse(formData);
       
-      // Simulate API call - will be replaced with Supabase
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const { error } = await supabase.from('leads').insert({
+        nombre: validatedData.nombre,
+        empresa: validatedData.empresa || null,
+        email: validatedData.email,
+        telefono: validatedData.telefono || null,
+        comentario: validatedData.comentario,
+      });
+
+      if (error) throw error;
       
       toast({
         title: "¡Mensaje enviado!",
@@ -75,6 +82,12 @@ export const ContactForm = () => {
         toast({
           title: "Error de validación",
           description: "Por favor, revisa los campos marcados.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo enviar el mensaje. Inténtalo de nuevo.",
           variant: "destructive",
         });
       }
@@ -111,7 +124,7 @@ export const ContactForm = () => {
         </div>
         <div className="space-y-2">
           <label htmlFor="empresa" className="text-sm font-medium text-foreground">
-            Empresa *
+            Empresa
           </label>
           <Input
             id="empresa"
@@ -147,7 +160,7 @@ export const ContactForm = () => {
         </div>
         <div className="space-y-2">
           <label htmlFor="telefono" className="text-sm font-medium text-foreground">
-            Teléfono *
+            Teléfono
           </label>
           <Input
             id="telefono"

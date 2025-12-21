@@ -72,6 +72,17 @@ export const Header = () => {
 
           {/* Auth & CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            {user && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                Panel Admin
+              </Button>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
@@ -124,6 +135,20 @@ export const Header = () => {
                 </a>
               ))}
               <div className="px-4 pt-2 space-y-2">
+                {user && (
+                  <Button 
+                    variant="ghost" 
+                    size="default" 
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/admin');
+                    }}
+                  >
+                    <User className="w-4 h-4" />
+                    Panel Admin
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="default" 
