@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      leads: {
+        Row: {
+          comentario: string | null
+          created_at: string
+          email: string
+          empresa: string | null
+          id: string
+          leido: boolean
+          nombre: string
+          telefono: string | null
+        }
+        Insert: {
+          comentario?: string | null
+          created_at?: string
+          email: string
+          empresa?: string | null
+          id?: string
+          leido?: boolean
+          nombre: string
+          telefono?: string | null
+        }
+        Update: {
+          comentario?: string | null
+          created_at?: string
+          email?: string
+          empresa?: string | null
+          id?: string
+          leido?: boolean
+          nombre?: string
+          telefono?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
