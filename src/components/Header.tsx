@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Shield, Menu, X } from "lucide-react";
+import { Shield, Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const navLinks = [
   { href: "#servicios", label: "Servicios" },
@@ -13,6 +15,8 @@ const navLinks = [
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +25,14 @@ export const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleAuthClick = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <motion.header
@@ -58,8 +70,26 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* Auth & CTA Buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleAuthClick}
+              className="flex items-center gap-2"
+            >
+              {user ? (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  Cerrar sesión
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  Acceder
+                </>
+              )}
+            </Button>
             <Button variant="hero" size="default" asChild>
               <a href="#contacto">Solicitar evaluación</a>
             </Button>
@@ -93,7 +123,28 @@ export const Header = () => {
                   {link.label}
                 </a>
               ))}
-              <div className="px-4 pt-2">
+              <div className="px-4 pt-2 space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="default" 
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleAuthClick();
+                  }}
+                >
+                  {user ? (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      Cerrar sesión
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      Acceder
+                    </>
+                  )}
+                </Button>
                 <Button variant="hero" size="default" className="w-full" asChild>
                   <a href="#contacto" onClick={() => setIsMobileMenuOpen(false)}>
                     Solicitar evaluación
