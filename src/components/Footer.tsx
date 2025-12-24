@@ -53,11 +53,11 @@ export const Footer = () => {
             <h4 className="font-semibold text-foreground mb-4">Contacto</h4>
             <div className="space-y-3">
               <a
-                href="mailto:contacto@cyberauditpro.com"
+                href="mailto:contacto@seed42.uk"
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
               >
                 <Mail className="w-4 h-4" />
-                contacto@cyberauditpro.com
+                contacto@seed42.uk
               </a>
               <div className="flex items-center gap-3 pt-2">
                 <a
