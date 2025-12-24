@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Shield, Mail, Lock, User, Loader2, AlertCircle, Wallet } from 'lucide-react';
+import { Shield, Mail, Lock, User, Loader2, AlertCircle, Wallet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -101,12 +101,12 @@ const Auth = () => {
     setIsLoading(false);
   };
 
-  const handleWalletLogin = async () => {
+  const handleWalletLogin = async (walletType: 'metamask' | 'walletconnect') => {
     setIsLoading(true);
     setAuthError(null);
     
     try {
-      const { error } = await signInWithWallet();
+      const { error } = await signInWithWallet(walletType);
       
       if (error) {
         setAuthError(error.message);
@@ -321,16 +321,28 @@ const Auth = () => {
           </div>
 
           {/* Web3 Wallet Login */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleWalletLogin}
-            disabled={isLoading}
-          >
-            <Wallet className="w-4 h-4 mr-2" />
-            Conectar Wallet Web3
-          </Button>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => handleWalletLogin('metamask')}
+              disabled={isLoading}
+            >
+              <Wallet className="w-4 h-4 mr-2" />
+              MetaMask
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => handleWalletLogin('walletconnect')}
+              disabled={isLoading}
+            >
+              <Smartphone className="w-4 h-4 mr-2" />
+              WalletConnect
+            </Button>
+          </div>
 
           {/* Switch mode */}
           <p className="text-center text-sm text-muted-foreground mt-6">
