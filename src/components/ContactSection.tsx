@@ -6,8 +6,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "contacto@cyberauditpro.com",
-    href: "mailto:contacto@cyberauditpro.com",
+    value: "contacto@seed42.uk",
+    href: "mailto:contacto@seed42.uk",
   },
   {
     icon: MapPin,
