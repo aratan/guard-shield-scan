@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Shield, Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Shield, Menu, X, LogIn, LogOut, User, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +17,12 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  // Get wallet address from user metadata if authenticated via Web3
+  const walletAddress = user?.user_metadata?.wallet_address as string | undefined;
+  const truncatedWallet = walletAddress 
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,6 +78,12 @@ export const Header = () => {
 
           {/* Auth & CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            {user && truncatedWallet && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-lg">
+                <Wallet className="w-4 h-4 text-primary" />
+                <span className="text-sm font-mono text-foreground">{truncatedWallet}</span>
+              </div>
+            )}
             {user && (
               <Button 
                 variant="ghost" 
@@ -135,6 +147,12 @@ export const Header = () => {
                 </a>
               ))}
               <div className="px-4 pt-2 space-y-2">
+                {user && truncatedWallet && (
+                  <div className="flex items-center justify-center gap-2 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                    <Wallet className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-mono text-foreground">{truncatedWallet}</span>
+                  </div>
+                )}
                 {user && (
                   <Button 
                     variant="ghost" 
