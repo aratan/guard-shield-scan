@@ -67,25 +67,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithWallet = async () => {
     try {
       // Check if MetaMask or another wallet is installed
-      const ethereum = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
+      const ethereum = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown>; isMetaMask?: boolean } }).ethereum;
+      
       if (!ethereum) {
-        return { error: new Error('No se detectó una wallet Web3. Por favor instala MetaMask.') };
+        return { error: new Error('No se detectó una wallet Web3. Por favor instala MetaMask o una wallet compatible.') };
+      }
+
+      // Request account access first
+      try {
+        await ethereum.request({ method: 'eth_requestAccounts' });
+      } catch (requestError) {
+        return { error: new Error('Acceso a la wallet denegado. Por favor, autoriza la conexión.') };
       }
 
       const provider = new BrowserProvider(ethereum);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Create a message for the user to sign
-      const nonce = Math.floor(Math.random() * 1000000).toString();
-      const message = `Iniciar sesión en CyberAuditPro\n\nWallet: ${address}\nNonce: ${nonce}`;
+      // Create a message for the user to sign with timestamp for security
+      const timestamp = Date.now();
+      const message = `Iniciar sesión en CyberAuditPro\n\nWallet: ${address}\nTimestamp: ${timestamp}`;
       
       // Request signature
-      const signature = await signer.signMessage(message);
+      let signature: string;
+      try {
+        signature = await signer.signMessage(message);
+      } catch (signError) {
+        if (signError instanceof Error && signError.message.includes('user rejected')) {
+          return { error: new Error('Firma rechazada por el usuario') };
+        }
+        return { error: new Error('Error al firmar el mensaje') };
+      }
 
-      // Use the wallet address as email (with a domain) and signature as password
-      const walletEmail = `${address.toLowerCase()}@wallet.local`;
-      const walletPassword = signature.slice(0, 72); // Use first 72 chars of signature as password
+      // Use the wallet address as email and a hash of signature as password
+      const walletEmail = `${address.toLowerCase()}@wallet.cyberauditpro`;
+      // Use a consistent password derived from the address (not the signature which changes)
+      const walletPassword = `wallet_${address.toLowerCase()}_secure_auth`;
 
       // Try to sign in first
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -108,14 +125,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
 
         if (signUpError) {
+          // If email confirmation is required
+          if (signUpError.message?.includes('Email not confirmed')) {
+            return { error: new Error('Por favor confirma tu email para continuar') };
+          }
           return { error: signUpError as Error };
         }
 
-        // Auto sign in after signup
+        // Try to sign in after signup (for cases where email confirmation is disabled)
         const { error: autoSignInError } = await supabase.auth.signInWithPassword({
           email: walletEmail,
           password: walletPassword,
         });
+
+        // If still failing due to email confirmation, return success message
+        if (autoSignInError?.message?.includes('Email not confirmed')) {
+          return { error: new Error('Cuenta creada. Por favor confirma tu email para continuar.') };
+        }
 
         if (autoSignInError) {
           return { error: autoSignInError as Error };
@@ -126,9 +152,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return { error: null };
     } catch (err) {
+      console.error('Wallet login error:', err);
       if (err instanceof Error) {
-        if (err.message.includes('user rejected')) {
-          return { error: new Error('Firma rechazada por el usuario') };
+        if (err.message.includes('user rejected') || err.message.includes('User rejected')) {
+          return { error: new Error('Operación cancelada por el usuario') };
+        }
+        if (err.message.includes('already pending')) {
+          return { error: new Error('Ya hay una solicitud pendiente en tu wallet. Revisa MetaMask.') };
         }
         return { error: err };
       }

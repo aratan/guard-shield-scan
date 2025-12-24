@@ -105,19 +105,23 @@ const Auth = () => {
     setIsLoading(true);
     setAuthError(null);
     
-    const { error } = await signInWithWallet();
-    
-    if (error) {
-      setAuthError(error.message);
+    try {
+      const { error } = await signInWithWallet();
+      
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        toast({
+          title: '¡Bienvenido!',
+          description: 'Has iniciado sesión con tu wallet',
+        });
+        navigate('/');
+      }
+    } catch (err) {
+      setAuthError('Error al conectar con la wallet');
+    } finally {
       setIsLoading(false);
-    } else {
-      toast({
-        title: '¡Bienvenido!',
-        description: 'Has iniciado sesión con tu wallet',
-      });
-      navigate('/');
     }
-    setIsLoading(false);
   };
 
   const switchMode = () => {
