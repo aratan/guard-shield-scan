@@ -47,7 +47,7 @@ export const AboutSection = () => {
                   <Shield className="w-16 h-16 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-2">
-                  [Tu nombre aquí]
+                  [Victor Arbiol]
                 </h3>
                 <p className="text-primary font-mono text-sm mb-4">
                   Security Researcher & Pentester
